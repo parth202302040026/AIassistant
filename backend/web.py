@@ -6,6 +6,7 @@ from pydantic import BaseModel
 import json
 from pypdf import PdfReader
 from docx import Document
+from fastapi import FastAPI
 
 load_dotenv()
 
@@ -144,6 +145,9 @@ def canpro(profile):
     data = json.loads(result)
     canpro = Profile(**data)
     return canpro
+
+class ChatRequest(BaseModel):
+    question: str
 
 def assist(canpro,question):
     system_prompt="""
@@ -327,3 +331,18 @@ def match(canpro,jd):
     
     result= llm_call(system_prompt,user_prompt)
     return result 
+
+app= FastAPI()
+@app.get("/")
+def home():
+    
+    return{
+        "message":"llm is running"
+    }
+@app.post("/chat")
+def chat(request:ChatRequest):
+    result= canpro(profile)
+    answer=assist(result,request.question)
+    return{
+        "answer":answer
+    }
